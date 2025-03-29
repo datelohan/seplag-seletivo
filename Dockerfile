@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libpq-dev \
     zip \
     unzip
 
@@ -18,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instalar extensões PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Obter última versão do Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -31,4 +32,4 @@ RUN mkdir -p /home/$user/.composer && \
 # Definir diretório de trabalho
 WORKDIR /var/www
 
-USER $user 
+USER $user

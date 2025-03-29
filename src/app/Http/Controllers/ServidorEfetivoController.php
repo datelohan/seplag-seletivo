@@ -4,94 +4,106 @@ namespace App\Http\Controllers;
 
 use App\Models\ServidorEfetivo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ServidorEfetivoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $servidores = ServidorEfetivo::all();
-        return response()->json([
-            'message' => 'Servidores listados com sucesso',
-            'data' => $servidores
-        ]);
+        $perPage = $request->query('per_page', 10); // Número de itens por página (padrão: 10)
+        $servidoresEfetivos = ServidorEfetivo::paginate($perPage);
+
+        // Adiciona a URL de cada objeto
+        $servidoresEfetivos->getCollection()->transform(function ($servidorEfetivo) {
+            $servidorEfetivo->url = route('servidores_efetivos.show', ['servidor_efetivo' => $servidorEfetivo->ser_id]); // Use 'ser_id' como chave primária
+            return $servidorEfetivo;
+        });
+
+        return $servidoresEfetivos;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nome' => 'required|string|max:255',
-            'matricula' => 'required|string|unique:servidores_efetivos,matricula',
-            'cargo' => 'required|string|max:255',
-            'lotacao' => 'required|string|max:255',
-        ], [
-            'nome.required' => 'O campo nome é obrigatório',
-            'nome.max' => 'O nome não pode ter mais que 255 caracteres',
-            'matricula.required' => 'O campo matrícula é obrigatório',
-            'matricula.unique' => 'Esta matrícula já está cadastrada',
-            'cargo.required' => 'O campo cargo é obrigatório',
-            'cargo.max' => 'O cargo não pode ter mais que 255 caracteres',
-            'lotacao.required' => 'O campo lotação é obrigatório',
-            'lotacao.max' => 'A lotação não pode ter mais que 255 caracteres'
+            'pes_id' => 'required|exists:pessoas,pes_id', // Valida se a pessoa existe
+            'se_matricula' => 'required|string|max:50', // Valida a matrícula
         ]);
 
-        $servidor = ServidorEfetivo::create($validated);
-
-        return response()->json([
-            'message' => 'Servidor cadastrado com sucesso',
-            'data' => $servidor
-        ], 201);
+        return ServidorEfetivo::create($validated);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ServidorEfetivo $servidorEfetivo)
+    public function show(ServidorEfetivo $servidor_efetivo)
     {
-        return response()->json([
-            'message' => 'Servidor encontrado com sucesso',
-            'data' => $servidorEfetivo
-        ]);
+        return $servidor_efetivo;
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, ServidorEfetivo $servidorEfetivo)
     {
         $validated = $request->validate([
-            'nome' => 'string|max:255',
-            'matricula' => 'string|unique:servidores_efetivos,matricula,' . $servidorEfetivo->id,
-            'cargo' => 'string|max:255',
-            'lotacao' => 'string|max:255',
-        ], [
-            'nome.max' => 'O nome não pode ter mais que 255 caracteres',
-            'matricula.unique' => 'Esta matrícula já está cadastrada',
-            'cargo.max' => 'O cargo não pode ter mais que 255 caracteres',
-            'lotacao.max' => 'A lotação não pode ter mais que 255 caracteres'
+            'pes_id' => 'exists:pessoas,pes_id', // Valida se a pessoa existe
+            'se_matricula' => 'string|max:50', // Valida a matrícula
         ]);
 
         $servidorEfetivo->update($validated);
-
-        return response()->json([
-            'message' => 'Servidor atualizado com sucesso',
-            'data' => $servidorEfetivo
-        ]);
+        return $servidorEfetivo;
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(ServidorEfetivo $servidorEfetivo)
     {
         $servidorEfetivo->delete();
-        return response()->json([
-            'message' => 'Servidor removido com sucesso'
-        ]);
+        return response()->json(['message' => 'Servidor Efetivo deletado com sucesso']);
     }
-} 
+
+    public function getByUnidade($unid_id)
+    {
+        $servidores = DB::table('lotacaos as a')
+            ->join('servidor_efetivos as b', 'b.pes_id', '=', 'a.pes_id')
+            ->join('unidades as c', 'a.unid_id', '=', 'c.uni_id')
+            ->join('pessoas as d', 'd.pes_id', '=', 'a.pes_id')
+            ->where('c.uni_id', $unid_id)
+            ->select(
+                'd.pes_nome as nome',
+                'd.pes_data_nascimento as data_nascimento',
+                'c.uni_nome as unidade_lotacao'
+            )
+            ->get()
+            ->map(function ($servidor) {
+                return [
+                    'nome' => $servidor->nome,
+                    'idade' => \Carbon\Carbon::parse($servidor->data_nascimento)->age ?? null,
+                    'unidade_lotacao' => $servidor->unidade_lotacao,
+                ];
+            });
+
+        return response()->json($servidores);
+    }
+
+    public function getEnderecoFuncional($nome)
+    {
+        if (!$nome) {
+            return response()->json(['message' => 'O parâmetro "nome" é obrigatório.'], 400);
+        }
+
+        $enderecos = DB::table('servidor_efetivos as se')
+            ->join('pessoas as p', 'se.pes_id', '=', 'p.pes_id')
+            ->join('lotacaos as l', 'se.pes_id', '=', 'l.pes_id')
+            ->join('unidades as u', 'l.unid_id', '=', 'u.uni_id')
+            ->join('unidade_endereco as ue', 'u.uni_id', '=', 'ue.unid_id')
+            ->join('enderecos as e', 'ue.end_id', '=', 'e.end_id')
+            ->where('p.pes_nome', 'like', '%' . $nome . '%') // Filtra pelo nome do servidor
+            ->select(
+                'p.pes_nome as nome_servidor',
+                'u.uni_nome as unidade',
+                'e.end_tipo_logradouro as tipo_logradouro',
+                'e.end_logradouro as logradouro',
+                'e.end_numero as numero'
+            )
+            ->get();
+
+        if ($enderecos->isEmpty()) {
+            return response()->json(['message' => 'Nenhum endereço funcional encontrado para o nome fornecido.'], 404);
+        }
+
+        return response()->json($enderecos);
+    }
+}

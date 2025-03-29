@@ -1,2 +1,2 @@
 
-CREATE DATABASE laravel_test;
+CREATE DATABASE laravel;

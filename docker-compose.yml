@@ -5,23 +5,32 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        uid: 1000 # ID do usuário
+        user: appuser # Nome do usuário
     container_name: seplag-app
     restart: unless-stopped
     working_dir: /var/www/
     volumes:
       - ./src:/var/www
+      - ./wait-for-it.sh:/wait-for-it.sh # Monte o script no container
     networks:
       - seplag-network
     depends_on:
       - db
       - minio
+    environment:
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    command: php-fpm
 
   db:
     image: postgres:latest
     container_name: seplag-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_DB: laravel # Nome do banco de dados a ser criado
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -55,7 +64,8 @@ services:
       - "8000:80"
     volumes:
       - ./src:/var/www
-      - ./nginx/conf.d:/etc/nginx/conf.d/
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx # Adicione logs para depuração
     networks:
       - seplag-network
     depends_on:
@@ -68,3 +78,4 @@ networks:
 volumes:
   postgres-data:
   minio-data:
+  nginx-logs: # Certifique-se de que o volume de logs está configurado
