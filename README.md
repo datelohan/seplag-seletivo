@@ -56,11 +56,19 @@ docker-compose exec minio mc mb myminio/seplag1
 ### Servidores Efetivos
 
 - `GET /api/servidores` - Listar servidores
-- `GET /api/endereco_funcional` - Buscar servidor por Endereço Funcional
+- `GET /api/endereco_funcional/{nome_funcionario}` - Buscar servidor por Endereço Funcional
 - `POST /api/servidores` - Criar servidor
 - `GET /api/servidores/{id}` - Visualizar servidor
 - `PUT /api/servidores/{id}` - Atualizar servidor
 - `DELETE /api/servidores/{id}` - Excluir servidor
+
+### Servidores Temporários
+
+- `GET /api/servidores_temporarios` - Listar servidores
+- `POST /api/servidores_temporarios` - Criar servidor
+- `GET /api/servidores_temporarios/{id}` - Visualizar servidor
+- `PUT /api/servidores_temporarios/{id}` - Atualizar servidor
+- `DELETE /api/servidores_temporarios/{id}` - Excluir servidor
 
 ### Upload de Imagens incompleto,devido ao tempo curto não consegui implementar o envio de imagens para bucket, porém o container foi iniciado
 
@@ -91,12 +99,133 @@ curl -X POST http://localhost:8000/api/auth/login \
   Authorization: Bearer TOKEN
 
 3. EXEMPLOS DE TESTE DA API :
-`AA{ "name": "Lohan Date",
-	"email":"datelohan@email.com",
-"password":"123456789"}` - Envie um POST PARA : 
-http://127.0.0.1:8000/api/login retornará seu token
-![image](https://github.com/user-attachments/assets/a48c731d-8b27-4009-a097-6c4f4bf7da07)
-você ira utilizar esse token, em outras aplicações enviando no Header da requisição
+# API de Lotacoes
+
+Esta API permite gerenciar as lotações de pessoas em unidades. Todas as requisições exigem autenticação, portanto, é necessário enviar um token no cabeçalho da requisição:
+
+**Cabeçalho obrigatório:**
+```yaml
+Authorization: Bearer {seu_token_aqui}
+```
+
+## Endpoints
+
+### 1. Listar todas as lotações
+**GET** `/lotacoes`
+
+#### Parâmetros opcionais:
+- `per_page` (integer, default: 10) - Número de itens por página.
+
+#### Exemplo de resposta:
+```json
+{
+  "data": [
+    {
+      "pes_id": 1,
+      "unid_id": 2,
+      "lot_data_lotacao": "2024-01-01",
+      "lot_data_remocao": "2025-01-01",
+      "lot_portaria": "Portaria 123",
+      "created_at": "2024-03-30T12:34:56Z",
+      "updated_at": "2024-03-30T12:34:56Z",
+      "url": "http://seusite.com/lotacoes/1"
+    }
+  ],
+  "links": {...},
+  "meta": {...}
+}
+```
+
+---
+
+### 2. Criar uma nova lotação
+**POST** `/lotacoes`
+
+#### Corpo da requisição (JSON):
+```json
+{
+  "pes_id": 1,
+  "uni_id": 2,
+  "lot_data_lotacao": "2024-01-01",
+  "lot_data_remocao": "2025-01-01",
+  "lot_portaria": "Portaria 123"
+}
+```
+
+#### Resposta de sucesso:
+```json
+{
+  "pes_id": 1,
+  "uni_id": 2,
+  "lot_data_lotacao": "2024-01-01",
+  "lot_data_remocao": "2025-01-01",
+  "lot_portaria": "Portaria 123",
+  "created_at": "2024-03-30T12:34:56Z",
+  "updated_at": "2024-03-30T12:34:56Z"
+}
+```
+
+---
+
+### 3. Buscar uma lotação específica
+**GET** `/lotacoes/{lotacao}`
+
+#### Exemplo de resposta:
+```json
+{
+  "pes_id": 1,
+  "unid_id": 2,
+  "lot_data_lotacao": "2024-01-01",
+  "lot_data_remocao": "2025-01-01",
+  "lot_portaria": "Portaria 123",
+  "created_at": "2024-03-30T12:34:56Z",
+  "updated_at": "2024-03-30T12:34:56Z",
+  "url": "http://seusite.com/lotacoes/1"
+}
+```
+
+---
+
+### 4. Atualizar uma lotação
+**PUT/PATCH** `/lotacoes/{lotacao}`
+
+#### Corpo da requisição (JSON):
+```json
+{
+  "pes_id": 1,
+  "uni_id": 2,
+  "lot_data_lotacao": "2024-02-01",
+  "lot_data_remocao": "2025-02-01",
+  "lot_portaria": "Portaria 456"
+}
+```
+
+#### Exemplo de resposta:
+```json
+{
+  "pes_id": 1,
+  "unid_id": 2,
+  "lot_data_lotacao": "2024-02-01",
+  "lot_data_remocao": "2025-02-01",
+  "lot_portaria": "Portaria 456",
+  "created_at": "2024-03-30T12:34:56Z",
+  "updated_at": "2024-03-30T12:45:00Z",
+  "url": "http://seusite.com/lotacoes/1"
+}
+```
+
+---
+
+### 5. Deletar uma lotação
+**DELETE** `/lotacoes/{lotacao}`
+
+#### Resposta de sucesso:
+```json
+{
+  "message": "Lotação deletada com sucesso"
+}
+```
+
    
 ## Desenvolvimento
 
