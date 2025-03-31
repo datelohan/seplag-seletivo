@@ -9,8 +9,10 @@ class FotoPessoa extends Model
     use HasFactory;
 
     protected $fillable = [
-        'pessoa_id',
-        'caminho',
+        'fp_pes_id',
+        'fp_dataa',
+        'fp_bucket',
+        'fp_path',
     ];
 
     public function pessoa()

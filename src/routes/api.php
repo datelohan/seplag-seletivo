@@ -35,6 +35,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    Route::post('/foto-pessoa', [FotoPessoaController::class, 'store'])->name('foto-pessoa.store');
 
     // Rotas protegidas para CRUD
     Route::apiResource('enderecos', EnderecoController::class);
@@ -64,4 +65,121 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Rota explícita para criar registros (opcional)
     Route::post('/enderecos', [EnderecoController::class, 'store']);
+});
+
+// Rota para testar conexão com MinIO
+
+Route::post('/upload-image', function (Request $request) {
+    try {
+        // Valida se o arquivo foi enviado
+        if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
+            return response()->json(['message' => 'No valid image file provided.'], 400);
+        }
+
+        $file = $request->file('image');
+        $filePath = 'images/' . $file->getClientOriginalName();
+
+        // Envia a imagem para o MinIO
+        $stored = Storage::disk('s3')->put($filePath, file_get_contents($file));
+
+        if ($stored) {
+            return response()->json(['message' => 'Image uploaded successfully!', 'path' => $filePath]);
+        }
+
+        return response()->json(['message' => 'Failed to upload image.'], 500);
+    } catch (\Exception $e) {
+        \Log::error('Failed to upload image to MinIO', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json(['message' => 'Failed to upload image.', 'error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/download', function () {
+    try {
+        $filePath = 'image.jpg';
+
+        // Verifica se o arquivo existe no MinIO
+        if (Storage::disk('s3')->exists($filePath)) {
+            return Storage::disk('s3')->download($filePath);
+        }
+
+        return response()->json(['message' => 'File not found in MinIO!'], 404);
+    } catch (\Exception $e) {
+        \Log::error('Failed to download file from MinIO', [
+            'error' => $e->getMessage(),
+            'filePath' => $filePath,
+        ]);
+
+        return response()->json(['message' => 'Failed to download file.', 'error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/upload-test-file', function () {
+    $filePath = 'test/file.txt';
+    $fileContent = 'This is a test file for MinIO storage.';
+
+    Storage::disk('s3')->put($filePath, $fileContent);
+
+    return 'Test file uploaded to MinIO!';
+});
+
+Route::get('/test-upload', function () {
+    try {
+        // Envia um arquivo de teste para o MinIO
+        $filePath = 'test/file.txt';
+        $fileContent = 'This is a test file for MinIO storage.';
+
+        Storage::disk('s3')->put($filePath, $fileContent);
+
+        return response()->json(['message' => 'File uploaded successfully!', 'path' => $filePath]);
+    } catch (\Exception $e) {
+        \Log::error('Failed to upload file to MinIO', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json(['message' => 'Failed to upload file.', 'error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/test-minio-connection', function () {
+    try {
+        $disk = Storage::disk('s3');
+        $exists = $disk->exists('test'); // Verifica se o arquivo ou diretório "test" existe
+
+        return response()->json(['message' => 'Connection successful!', 'exists' => $exists]);
+    } catch (\Exception $e) {
+        \Log::error('Failed to connect to MinIO', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json(['message' => 'Connection failed!', 'error' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/list-images', function () {
+    try {
+        $directory = 'dados/';
+        $files = Storage::disk('s3')->files($directory);
+
+        // Gera URLs manualmente
+        $fileUrls = array_map(function ($file) {
+            return config('filesystems.disks.s3.endpoint') . '/' . config('filesystems.disks.s3.bucket') . '/' . $file;
+        }, $files);
+
+        return response()->json([
+            'message' => 'Images retrieved successfully!',
+            'files' => $fileUrls,
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Failed to list images from MinIO', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'message' => 'Failed to retrieve images.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 });

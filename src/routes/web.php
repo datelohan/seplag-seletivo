@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\FotoPessoaController;
 
 // Página inicial
 Route::get('/', function () {
@@ -31,3 +33,5 @@ Route::get('/login', function () {
 Route::get('/dashboard', function () {
     return view('spa.dashboard');
 })->middleware('auth')->name('dashboard');
+
+
