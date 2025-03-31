@@ -99,9 +99,9 @@ curl -X POST http://localhost:8000/api/auth/login \
   Authorization: Bearer TOKEN
 
 3. EXEMPLOS DE TESTE DA API :
-# API de Lotacoes
+# API de Lotacoes, Cidades, Enderecos e Unidades
 
-Esta API permite gerenciar as lotações de pessoas em unidades. Todas as requisições exigem autenticação, portanto, é necessário enviar um token no cabeçalho da requisição:
+Esta API permite gerenciar as lotações de pessoas em unidades, as cidades, os endereços e as unidades. Todas as requisições exigem autenticação, portanto, é necessário enviar um token no cabeçalho da requisição:
 
 **Cabeçalho obrigatório:**
 ```yaml
@@ -119,18 +119,7 @@ Authorization: Bearer {seu_token_aqui}
 #### Exemplo de resposta:
 ```json
 {
-  "data": [
-    {
-      "pes_id": 1,
-      "unid_id": 2,
-      "lot_data_lotacao": "2024-01-01",
-      "lot_data_remocao": "2025-01-01",
-      "lot_portaria": "Portaria 123",
-      "created_at": "2024-03-30T12:34:56Z",
-      "updated_at": "2024-03-30T12:34:56Z",
-      "url": "http://seusite.com/lotacoes/1"
-    }
-  ],
+  "data": [...],
   "links": {...},
   "meta": {...}
 }
@@ -138,28 +127,61 @@ Authorization: Bearer {seu_token_aqui}
 
 ---
 
-### 2. Criar uma nova lotação
-**POST** `/lotacoes`
+### 2. Listar todas as cidades
+**GET** `/cidades`
+
+#### Parâmetros opcionais:
+- `per_page` (integer, default: 10) - Número de itens por página.
+
+#### Exemplo de resposta:
+```json
+{
+  "data": [...],
+  "links": {...},
+  "meta": {...}
+}
+```
+
+---
+
+### 3. Listar todos os endereços
+**GET** `/enderecos`
+
+#### Parâmetros opcionais:
+- `per_page` (integer, default: 10) - Número de itens por página.
+
+#### Exemplo de resposta:
+```json
+{
+  "data": [...],
+  "links": {...},
+  "meta": {...}
+}
+```
+
+---
+
+### 4. Criar um novo endereço
+**POST** `/enderecos`
 
 #### Corpo da requisição (JSON):
 ```json
 {
-  "pes_id": 1,
-  "uni_id": 2,
-  "lot_data_lotacao": "2024-01-01",
-  "lot_data_remocao": "2025-01-01",
-  "lot_portaria": "Portaria 123"
+  "end_tipo_logradouro": "Rua",
+  "end_logradouro": "Paulista",
+  "end_numero": "1000",
+  "cid_id": 1
 }
 ```
 
 #### Resposta de sucesso:
 ```json
 {
-  "pes_id": 1,
-  "uni_id": 2,
-  "lot_data_lotacao": "2024-01-01",
-  "lot_data_remocao": "2025-01-01",
-  "lot_portaria": "Portaria 123",
+  "end_id": 1,
+  "end_tipo_logradouro": "Rua",
+  "end_logradouro": "Paulista",
+  "end_numero": "1000",
+  "cid_id": 1,
   "created_at": "2024-03-30T12:34:56Z",
   "updated_at": "2024-03-30T12:34:56Z"
 }
@@ -167,64 +189,148 @@ Authorization: Bearer {seu_token_aqui}
 
 ---
 
-### 3. Buscar uma lotação específica
-**GET** `/lotacoes/{lotacao}`
+### 5. Listar todas as unidades
+**GET** `/unidades`
+
+#### Parâmetros opcionais:
+- `per_page` (integer, default: 10) - Número de itens por página.
 
 #### Exemplo de resposta:
 ```json
 {
-  "pes_id": 1,
-  "unid_id": 2,
-  "lot_data_lotacao": "2024-01-01",
-  "lot_data_remocao": "2025-01-01",
-  "lot_portaria": "Portaria 123",
-  "created_at": "2024-03-30T12:34:56Z",
-  "updated_at": "2024-03-30T12:34:56Z",
-  "url": "http://seusite.com/lotacoes/1"
+  "data": [...],
+  "links": {...},
+  "meta": {...}
 }
 ```
 
 ---
 
-### 4. Atualizar uma lotação
-**PUT/PATCH** `/lotacoes/{lotacao}`
+### 6. Criar uma nova unidade
+**POST** `/unidades`
 
 #### Corpo da requisição (JSON):
 ```json
 {
-  "pes_id": 1,
-  "uni_id": 2,
-  "lot_data_lotacao": "2024-02-01",
-  "lot_data_remocao": "2025-02-01",
-  "lot_portaria": "Portaria 456"
+  "unid_nome": "Departamento de TI",
+  "unid_sigla": "DTI"
+}
+```
+
+#### Resposta de sucesso:
+```json
+{
+  "unid_id": 1,
+  "unid_nome": "Departamento de TI",
+  "unid_sigla": "DTI",
+  "created_at": "2024-03-30T12:34:56Z",
+  "updated_at": "2024-03-30T12:34:56Z"
+}
+```
+
+---
+
+### 7. Buscar uma unidade específica
+**GET** `/unidades/{unidade}`
+
+#### Exemplo de resposta:
+```json
+{
+  "unid_id": 1,
+  "unid_nome": "Departamento de TI",
+  "unid_sigla": "DTI",
+  "created_at": "2024-03-30T12:34:56Z",
+  "updated_at": "2024-03-30T12:34:56Z"
+}
+```
+
+---
+
+### 8. Atualizar uma unidade
+**PUT/PATCH** `/unidades/{unidade}`
+
+#### Corpo da requisição (JSON):
+```json
+{
+  "unid_nome": "Departamento de Tecnologia da Informação",
+  "unid_sigla": "DTI"
 }
 ```
 
 #### Exemplo de resposta:
 ```json
 {
-  "pes_id": 1,
-  "unid_id": 2,
-  "lot_data_lotacao": "2024-02-01",
-  "lot_data_remocao": "2025-02-01",
-  "lot_portaria": "Portaria 456",
+  "unid_id": 1,
+  "unid_nome": "Departamento de Tecnologia da Informação",
+  "unid_sigla": "DTI",
   "created_at": "2024-03-30T12:34:56Z",
-  "updated_at": "2024-03-30T12:45:00Z",
-  "url": "http://seusite.com/lotacoes/1"
+  "updated_at": "2024-03-30T12:45:00Z"
 }
 ```
 
 ---
 
-### 5. Deletar uma lotação
-**DELETE** `/lotacoes/{lotacao}`
+### 9. Deletar uma unidade
+**DELETE** `/unidades/{unidade}`
 
 #### Resposta de sucesso:
 ```json
 {
-  "message": "Lotação deletada com sucesso"
+  "message": "Unidade deletada com sucesso"
 }
 ```
+
+---
+
+### 10. Listar servidores efetivos
+**GET** `/servidores-efetivos`
+
+#### Parâmetros opcionais:
+- `per_page` (integer, default: 10) - Número de itens por página.
+
+#### Exemplo de resposta:
+```json
+{
+  "data": [...],
+  "links": {...},
+  "meta": {...}
+}
+```
+
+---
+
+### 11. Buscar servidor efetivo por unidade
+**GET** `/servidores-efetivos/unidade/{unid_id}`
+
+#### Exemplo de resposta:
+```json
+[
+  {
+    "nome": "João Silva",
+    "idade": 45,
+    "unidade_lotacao": "Departamento de TI"
+  }
+]
+```
+
+---
+
+### 12. Buscar endereço funcional de um servidor
+**GET** `/servidores-efetivos/endereco/{nome}`
+
+#### Exemplo de resposta:
+```json
+[
+  {
+    "nome_servidor": "João Silva",
+    "unidade": "Departamento de TI",
+    "tipo_logradouro": "Rua",
+    "logradouro": "Paulista",
+    "numero": "1000"
+  }
+]
+```
+
 
    
 ## Desenvolvimento
