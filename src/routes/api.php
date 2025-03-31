@@ -183,3 +183,8 @@ Route::get('/list-images', function () {
         ], 500);
     }
 });
+
+Route::get('/teste-arquivos', function () {
+    $files = Storage::disk('s3')->files('dados/');
+    dd($files);
+});
