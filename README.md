@@ -36,12 +36,8 @@ docker-compose exec app composer install
 docker-compose exec app php artisan key:generate
 ```
 
-6. Gere a chave JWT:
-```bash
-docker-compose exec app php artisan jwt:secret
-```
 
-7. Execute as migrações:
+6. Execute as migrações:
 ```bash
 docker-compose exec app php artisan migrate
 ```
@@ -49,14 +45,15 @@ docker-compose exec app php artisan migrate
 8. Crie o bucket no MinIO:
 ```bash
 docker-compose exec minio mc alias set myminio http://localhost:9000 minioadmin minioadmin
-docker-compose exec minio mc mb myminio/seplag-files
+docker-compose exec minio mc mb myminio/seplag1
 ```
 
 ## Endpoints da API
 
 ### Autenticação
+![image](https://github.com/user-attachments/assets/c0c12712-85e5-4aa9-8a77-a284cdb6afc9)
 
-- `POST /api/auth/register` - Registro de usuário
+- `POST /api/register` - Registro de usuário
 - `POST /api/auth/login` - Login
 - `POST /api/auth/logout` - Logout
 - `GET /api/auth/me` - Informações do usuário
