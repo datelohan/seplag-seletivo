@@ -16,22 +16,17 @@ git clone https://github.com/seu-usuario/api-seplag-laravel.git
 cd api-seplag-laravel
 ```
 
-2. Copie o arquivo de ambiente:
-```bash
-cp .env.example .env
-```
-
-3. Inicie os containers Docker:
+2. Inicie os containers Docker:
 ```bash
 docker-compose up -d
 ```
 
 4. Instale as dependências do Laravel:
 ```bash
-docker-compose exec app composer install
+docker-compose exec seplag-app composer install
 ```
 
-5. Gere a chave da aplicação:
+5. Gere a chave da aplicação: caso necessario
 ```bash
 docker-compose exec app php artisan key:generate
 ```
@@ -39,7 +34,7 @@ docker-compose exec app php artisan key:generate
 
 6. Execute as migrações:
 ```bash
-docker-compose exec app php artisan migrate
+docker-compose exec seplag-app php artisan migrate
 ```
 
 8. Crie o bucket no MinIO:
@@ -48,43 +43,35 @@ docker-compose exec minio mc alias set myminio http://localhost:9000 minioadmin 
 docker-compose exec minio mc mb myminio/seplag1
 ```
 
-## Endpoints da API - todas as rotas
-![image](https://github.com/user-attachments/assets/e7a547ee-48b4-4ed3-9a5b-ee47511eac71)
- - para ver mais rotas basta acessar o container, e  rodar o comand php artisan route:list
- - ```bash
-   docker exec -it seplag-app bash
-   php artisan route:list
-```
-### Autenticação
+## Endpoints da API
 
+### Autenticação
+![image](https://github.com/user-attachments/assets/c0c12712-85e5-4aa9-8a77-a284cdb6afc9)
 
 - `POST /api/register` - Registro de usuário
-- `POST /api/auth/login` - Login
-- `POST /api/auth/logout` - Logout
-- `GET /api/auth/me` - Informações do usuário
-- `POST /api/auth/refresh` - Atualizar token
+- `POST /api/login` - Login
+- `POST /api/logout` - Logout
+
 
 ### Servidores Efetivos
 
 - `GET /api/servidores` - Listar servidores
+- `GET /api/endereco_funcional` - Buscar servidor por Endereço Funcional
 - `POST /api/servidores` - Criar servidor
 - `GET /api/servidores/{id}` - Visualizar servidor
 - `PUT /api/servidores/{id}` - Atualizar servidor
 - `DELETE /api/servidores/{id}` - Excluir servidor
 
-### Upload de Imagens
+### Upload de Imagens incompleto,devido ao tempo curto não consegui implementar o envio de imagens para bucket, porém o container foi iniciado
 
 - `POST /api/upload` - Upload de imagem
 - `GET /api/upload/{filename}` - Obter URL temporária
 
 ## Testando a API
 
-1. Acesse a documentação da API:
-```
-http://localhost:8000/api/documentation
-```
 
-2. Use o Postman ou curl para testar os endpoints:
+
+1. Use o Postman, Insomnia ou curl para testar os endpoints:
 
 ```bash
 # Registro
@@ -98,6 +85,19 @@ curl -X POST http://localhost:8000/api/auth/login \
   -d '{"email":"test@example.com","password":"password"}'
 ```
 
+2. Configure o Insomnia desta maneira :
+  Headers:
+  Accept : application/json
+  Authorization: Bearer TOKEN
+
+3. EXEMPLOS DE TESTE DA API :
+`AA{ "name": "Lohan Date",
+	"email":"datelohan@email.com",
+"password":"123456789"}` - Envie um POST PARA : 
+http://127.0.0.1:8000/api/login retornará seu token
+![image](https://github.com/user-attachments/assets/a48c731d-8b27-4009-a097-6c4f4bf7da07)
+você ira utilizar esse token, em outras aplicações enviando no Header da requisição
+   
 ## Desenvolvimento
 
 - Laravel 11
@@ -108,6 +108,6 @@ curl -X POST http://localhost:8000/api/auth/login \
 
 ## Autor
 
-[Seu Nome]
-[Seu Email]
-[Seu GitHub] 
+[Lohan Date]
+[datelohan@gmail.com]
+[datelohan] 
