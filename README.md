@@ -48,10 +48,15 @@ docker-compose exec minio mc alias set myminio http://localhost:9000 minioadmin 
 docker-compose exec minio mc mb myminio/seplag1
 ```
 
-## Endpoints da API
-
+## Endpoints da API - todas as rotas
+![image](https://github.com/user-attachments/assets/e7a547ee-48b4-4ed3-9a5b-ee47511eac71)
+ - para ver mais rotas basta acessar o container, e  rodar o comand php artisan route:list
+ - ```bash
+   docker exec -it seplag-app bash
+   php artisan route:list
+```
 ### Autenticação
-![image](https://github.com/user-attachments/assets/c0c12712-85e5-4aa9-8a77-a284cdb6afc9)
+
 
 - `POST /api/register` - Registro de usuário
 - `POST /api/auth/login` - Login
